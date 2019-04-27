@@ -1,0 +1,261 @@
+cd e:\statakejian\shuju10.0
+
+*改变工作路径
+use WAGE (2).DTA
+
+*直方图
+histogram  wage,percent
+*画wage的频率直方图/百分比直方图
+
+histogram  wage,frequency start(0) width(1)  xlabel(0(2)25) xtick(1(1)25)  ylabel(0(20)140,grid gmax )  title("average hourly earnings")、
+*画wage的频数直方图，直方图的第一个条从0处开始，xlabel是x轴的标签也就是x轴的数字，ylabel中的grid是添加水平栅格，gmax是添加最大值的水平线
+
+histogram  wage ,percent start(0) width(2)  by( numdep ,total)
+*width条柱的宽度为2，by是根据这两个变量进行分组
+
+histogram  wage ,frequency start(0) width(1)  xlabel(0(2)25) xtick(1(1)25)  ylabel(0(20)140,grid gmax )  title("average hourly earnings")  addlabels norm gap(1)
+
+*addlabels给柱添加标签，gap(1)是柱与柱之间的间隙是1
+
+*箱线图
+
+graph box  wage
+graph box  wage,marker(1,mlabel( educ ))   ytitle("average hourly earnings")
+
+*marker给极端值添加标记，用educ的值进行标记
+
+graph box  wage,marker(1,mlabel( educ ))   ytitle(average hourly earnings)  yline(4.65) over( nonwhite )
+
+*yline(4.65)添加4.65这条水平线
+
+graph hbox  wage ,    over( numdep ) note("note:{ bf:Statistics   with   stata},version 12")    caption(caption:  Wage and years of education: 1976)    title(title:{it:Example of  horizontal box plots}) ytitle(ytitle:average hourly earnings  )
+
+*hbox是水平箱线图，over(numdep)是根据numdep进行分组画箱线图，note是注释，caption也是文字说明的意思，title是大标题
+
+graph twoway  scatter  wage  educ
+graph twoway  scatter  wage  educ,msymbol(S)   mcolor(purple)
+
+*散点图
+
+graph twoway  scatter   wage  educ [fweight= tenure ],msymbol(Oh)
+
+*fweight是权重，以tenure为权重画wage(y轴)对educ(x轴)的散点图，图中点的形状是Oh即大圆点，tenure的取值越大圈越大
+
+graph twoway  scatter  wage educ ,msymbol(oh)  ||lfit   wage  educ ,lwidth(medthick)
+
+*oh点的形状是oh小圆圈，||是管子，可以将两幅图画在一起而不分页，这里是lfit是添加线性拟合先，lwidth是拟合线的宽度，粗细为medthick即中粗
+
+graph twoway  scatter  wage educ ,msymbol(oh)  ||lfit wage  educ ,lwidth(medthick)||  ,ylabel(0(2)25)  xlabel(0(2)18) xtick(0(2)18)  legend(col(1)   ring(0)  position(12))
+
+
+
+graph twoway lfitci  wage educ ,lwidth(medthick)|| scatter   wage educ ,msymbol(Th)  ||scatter   wage  educ if  educ >13& wage <6   ,msymbol(S)  mlabel( nonwhite )||  ,ylabel(0(2)25)  xlabel(0(2)18) xtick(1(1)18)  legend(col(1)   ring(0)  position(11))
+
+*lfitci是拟合线的置信区间线(会画出拟合线和拟合线的置信区间图)，Th是空心三角形，如果educ的值大于13并且wage的值小于6，则画散点图，点的形状为S即实心方块，col(1)是图例放在一列
+
+cd e:\statakejian\shuju10.0
+use WAGE (2)
+d
+graph twoway lfitci  wage educ ,lwidth(medthick)|| scatter   wage educ ,msymbol(Th)  ||scatter   wage  educ if  educ >13& wage <6   ,msymbol(S)  mlabel( nonwhite )||  ,ylabel(0(2)25)  xlabel(0(2)18) xtick(1(1)18)  legend(col(1)   ring(0)  position(11) label(4 "average hourly earnings") order(4 3 2 1))
+graph matrix  educ exper tenure wage
+graph matrix  educ exper tenure wage,half msymbol(oh)
+
+
+
+use C:\Users\Administrator\Desktop\income.dta,clear
+
+d
+
+*曲线标绘图
+graph twoway line  gdp year  , title("per capita GDP   1991-2011")
+
+
+graph twoway line  urincome  ruincome  year  , xlabel(1991(2)2011)  xtitle(" ")  lwidth(medium  medthick)  lpattern(solid dash) legend(row(2)  ring(0) position(9) label(1  " urincome ")  label(2 " ruincome ")  order(1 2))   ylabe(0(3000)22000,grid  gmin gmax)  ytitle( "per capita income" )   title("per capita income   1991-2011")、
+
+*urincome和ruincome都是因变量，year是自变量。lwidth(medium medthick)线的宽度分别是medium和medthick，lpattern(solid dash)是线分别是是实线和虚线，legend中label是给图例加标签
+
+*line是曲线标绘图，connect是连线标绘图，区别就是曲线标绘图中没有散点而连线标绘图是散点图中的散点在连线会有点，点的形状可以参考散点图中点的形状
+
+graph twoway line  gdp  year  ,  ylabel(0(5000)35000)  yline(0) ytitle( "per capita GDP")   ||connect gdprate year,yaxis(2)   ylabel(100(2)115,axis(2))   msymbol(+ )   ytitle("rate of per capita GDP(%)",axis(2)) ||   ,xlabel(1991(2)2011)  xtitle(" ") legend(row(2)  ring(0) position(6) label(1  " gdp ")  label(2 " gdprate ")  order(1 2)) title("per capita GDP :1991-2011",size(medium))
+
+*这里第一次出现了axis(2)即第二个轴，会画在右边，ylabel里面加上axis(2)就是代表其操作就是对第二个坐标轴做的，如果不带就是默认的第一个坐标轴，点的形状是+在画图结束时要
+*加||与，在对这个图做操作，主要是对x轴和图例的操作，图例里面的order是对图例进行排序，titl里面的size是字体的大小
+
+
+*ASCII码
+
+findit  asciiplot
+*查看如何安装ASCII码的方式
+
+asciiplot
+
+*画出ASCII码的表
+
+*二次函数拟合线
+
+graph twoway connect  gdp year  ,  ylabel(0(5000)3500)  yline(0) ytitle( "per capita GDP")   ||qfit  gdp year,lwidth(medthick)   ||   ,xlabel(1991(2)2011)  xtitle(" ") legend(row(2)  ring(0) position(6) label(1  " gdp ")  label(2 "quadratic fit")  order(1 2)) title("per capita GDP :1991-2011",size(medium))
+
+*这里画出来图之后可以看出来很像是二次函数的图，因此做一个qfit即二次函数拟合线
+
+*面积图area
+
+graph twoway area gdp  year  ,  ylabel(0(5000)3500)  yline(0) ytitle( "per capita GDP")   ||qfit  gdp year,lwidth(medthick)   ||   ,xlabel(1991(2)2011)  xtitle(" ") legend(row(2)  ring(0) position(6) label(1  " gdp ")  label(2 "quadratic fit")  order(1 2)) title("per capita GDP :1991-2011",size(medium))
+
+*area是面积图，对gdp和year画，其画出来是点到x轴的面积图而且是连起来的，qfit还是二次拟合线
+
+*面积图rarea
+
+graph twoway rarea  gdphi gdplo  year  ,  color(gs13) ||line  gdp year,lwidth(thick)  lcolor(green)   ||   ,ylabel(0(5000)3500)  yline(0) ytitle( "per capita GDP") xlabel(1991(2)2011)  xtitle(" ") legend(row(2)  ring(0) position(7)   label(1 "uncertainty") label(2  " gdp ") order(2 1)) 
+
+*rarea也是画面积图，然后这里的gdphi是计算出来的一个值即gdp的95%的置信区间的上限，gdplo是95%的置信下限，thick是粗的，lcolor是这个线的颜色
+
+graph twoway rarea  gdphi gdplo  year  ,   color(gs13) ||line  gdp year,lwidth(thick)  lcolor(green)   ||   ,ylabel(0(5000)3500)  yline(0) ytitle( "per capita GDP") xlabel(1991(2)2011)  xtitle(" ") legend(row(2)  ring(0) position(7)   label(1 "uncertainty") label(2  " gdp ") order(2 1))
+
+*gs(0-16),gs(0)颜色是黑色，取值是16时是白色，在之间的时候是灰色，后画的会覆盖先画的与这与上一行相同
+
+*两个变量之间的条形图，见课本79页
+
+graph twoway rspike  gdphi gdplo  year  ,   lwidth(medthick)  color(gs13) ||bar  gdp year,color(gs10)   ||   ,ylabel(0(2)18)  yline(0) ytitle( "per capita GDP") xlabel(1991(2)2011)  xtitle(" ") legend(row(2)  ring(0) position(7)   label(2 "uncertainty") label(1  " gdp") order(2 1))
+
+*rspike是画不确定的区间的线，即将置信区间的长度画成小短线，这个图画出来应该是看不到小短线下面的部分的，将前面的13换成比10小的就好了
+
+cd g:\shuju12.0
+
+*打开do编辑器
+
+doedit ch3-1
+
+*把这个括号改掉了改成了wage2_1
+use WAGE (2).DTA
+d region gdp pop
+
+su wage
+
+*这里su是summary即计算所有的描述性统计量
+
+*条形图
+
+graph  bar  (mean) wage  (median)  wage ,  over( numdep )  ytitle( " average hourly earnings")   blabel(bar,format(%3.1f))  bar(1,color(blue))  bar(2, color(yellow))  legend(ring(0)    position(11)  col(2)  label(1  "mean")   label(2  "Median") symxsize(*.5))
+
+*(mean) wage  (median)  wage，画wage的均值与wage中位数的条形图，over(numdep)画的时候根据numdep分组，如果不带这个画出来就只会有两个条，bar(1,color(blue))是(mean)wage的*颜色是蓝色，legend里面的symxsize(*.5)是指图例里面的框的水平方向的长度只有默认的大小的一半，可以节省空间，使其与条形图的宽度更相似
+
+gen q=1
+graph pie  q,over( numdep )  pie(2,explode)  plabel(_all  sum,format(%4.0f))   legend(col(1)  position(9))
+
+*这里先定义了一个变量q，但是这个可以没有见下一行命令，这里是按照numdep进行分组画q的饼图，plabel是对每一个饼添加标签，sum是对numdep中的每一个类进行计数，format(%4.0f)
+*意思是4位整数保留0位小数，f的意思应该是浮点小数的意思
+
+graph pie  ,over( numdep )  pie(2,explode)  plabel(_all  percent,format(%4.0f))   legend(col(1)  position(9))
+
+*plabel(_all  percent,format(%4.0f)对所有的块添加标签，标签是percent即百分比，保留4位整数与0位小数
+
+*作业中的饼图
+
+use C:\Users\Administrator\Desktop\Stata\数据\shuju\gas.dta
+l
+graph pie nitrogen oxygen scarcegas CO2 other , pie(2, explode color(yellow)) legend(row(3) ring(1) position(6) label(1 "氮气") label(2 "氧气") label(3 "稀有气体") label(4 "二氧化碳") label(5 "其他")) plabel(_all percent,format("%7.0f"))
+*以nitrogen oxygen scarcegas CO2 other中的数据画饼图(这是整合后的数据)，pie(2, explode)突出饼图中的第二块，颜色为黄色
+
+*频数直方图
+
+histogram educ , start(0) width(2) xlabel(0(2)18) frequency norm
+
+*对称图，见课本82
+
+symplot  educ
+
+*分位数图
+
+quantile  educ
+quantile  educ,xlabel(0(0.1)1,grid) ylabel(0(2)18,grid)
+
+*正态分位数图
+
+qnorm educ,grid
+qnorm  educ ,xlabel(0(2)18,grid) ylabel(0(2)18,grid) grid
+
+*QQplot
+
+qqplot wage educ
+
+*中位数中位数图即QQplot是用来比较两个经验分布的分位数
+
+*标准正态概率图
+pnorm  educ
+
+
+*分位卡方图
+qchi educ
+
+*卡方概率图
+pchi
+
+use C:\Users\Administrator\Desktop\Stata\数据\shuju\statehealth.dta,clear
+
+
+*四个坐标轴的散点图
+graph twoway scatter smokeT college, yaxis(1 2) xaxis(1 2) title("This is the title")  subtitle("This is the SUBTITLE") caption("This is the CAPTION") note("This is the NOTE") ytitle("Percent adults smoking") ytitle("This is y AXIS 2" , axis(2)) xtitle("Percent adults with Bachelor's degree or higher") xtitle("This is x AXIS 2" , axis(2))
+
+*subtitle是子标题，x轴的中的axis(1)是指下面的轴，axis(2)是指上面的轴，y中的同
+
+graph twoway scatter smokeT college, yaxis (1 2)  xaxis (1 2) title("This is the title")  subtitle("This is the SUBTITLE") caption("This is the CAPTION") note("This is the NOTE") ytitle("Percent adults smoking") ytitle("This is y AXIS 2" , axis(2)) xtitle("Percent adults with Bachelor's degree or higher") xtitle("This is x AXIS 2" , axis(2)) text(15.5 22.5  "Utah" ) text(33.5 15 "Nevada", box margin (small) ) text(24.5 32 "Washinton DC"  "is not actually"  "a state", box justification (left) margin(small) bfcolor(white) )
+
+*text(15.5 22.5  "Utah" )是在纵坐标为15.5，横坐标为22.5的地方加上文字Utah，就算那里没有点也可以加。最后一个text是添加了三个文本，box是添加一个盒子即文本框，margin是
+*文本与文本框之间的间隙，如果是small的话是之间有一个小间隙，不加的话没有间隙就会文本紧贴着文本框，large是有很大的空隙，justification (left)是左对齐，bfcolor(white)是
+*文本框的底纹是红色
+*关于margin的详情可以查看D:\Stata14\docs\g.PDF
+
+use C:\Users\Administrator\Desktop\Stata\数据\shuju\gulf.dta
+
+*最后一个三个纵坐标的图，连线标绘图+曲线标绘图+连线标绘图
+graph twoway connected maxarea winter,yaxis(3) yscale(range(-300,200) axis(3)) ytitle("  Ice area,1000km^2 ",axis(3) placement(nw)) clpattern(dash)||line cil winter, yaxis(2) yscale(range(-4,3) axis(2))  ytitle("Degree C   ",axis(2)) ylabel( ,nogrid axis(2) ) clpat(solid) ||  connected cod winter,yaxis(1) yscale(range(0,200) axis(1)) ylabel( ,nogrid axis(1) ) ytitle(" Cod catch,1000 tons",axis(1) placement(sw))   || if winter>1959, xtitle(" ") xlabel(1960(5)2000,grid)  legend(position(7) ring(0) rows(3)  label(1 "Max ice area") label(2 "Min Cil,temp") labe(3 "Cod catch")) note("Source:data from DFO(2003)")
+
+*这里的的clpattern与lpattern等价，都是用来选择线的类型是实现还是虚线，connected与connect的效果相同都是连线标绘图，range是y的取值范围，clpat是clpattern的缩写，这里加了*一个winter>1959的条件，之后满足这个条件的点才会画出来，ytitle中的placement(nw)是y轴的标签放在西北方向，placement(sw)是放在西南方向
+
+*直接运行一个do文件
+
+doedit
+do fig03
+
+*运行名为fig03的这个do文件
+
+*保存图文件
+graph save fig03
+graph save Graph fig03 ,replace
+graph save fig032
+
+*调用图文件
+graph  use fig032
+
+*输出图文件
+graph export  fig032.png
+
+graph twoway line maxarea winter  if winter>1964, xlabel(1965(5)2000,grid) title("Maximum winter ice area ",position(4) ring(0) box margin(medium))  ytitle("Maxarea ice area,1000km^2") ylabel(50(50)200, angle(horizontal) nogrid) saving(fig03_46a)
+
+*这里的angle(horizontal)是指y轴的标签显示是水平的，默认的是竖着的。nogrid表示没有栅格即没有水平的栅格，默认的是y轴有几个axis就画水平几条线，x轴的同理，x轴对应的竖直的栅格
+
+graph twoway line  cil winter  if winter>1964, xlabel(1965(5)2000,grid) title("Minimum  cil temperature ",position(1) ring(0) box margin(medium))  ytitle("Degree C") ylabel(-1(0.50)1.5, angle(horizontal) nogrid) saving(fig03_46b)
+
+
+graph twoway line   cod winter  if winter>1964, xlabel(1965(5)2000,grid) title("Northern gulf cod catch ",position(1) ring(0) box margin(medium))  ytitle("1000 tons") ylabel(0(20)100, angle(horizontal) nogrid) saving(fig03_46c)
+
+
+*图形合并
+graph combine fig03_46a.gph fig03_46b.gph fig03_46c.gph,imargin(vsmall) rows(3)
+
+*imargin是图形之间的间隔，这选择了vsmall详情见D:\Stata14\docs\g.PDF，row(3)是分三行
+
+graph combine fig03_46a.gph fig03_46b.gph fig03_46c.gph,imargin(vsmall) cols(3)
+
+*cols(3)是分三列
+
+graph combine fig03_46a.gph fig03_46b.gph fig03_46c.gph,imargin(vsmall) rows(3)
+
+use Granite1.dta,clear
+
+*带帽全距条形
+
+graph twoway rcap conlow conhi date|| connect bushapp date || ,legend(off) ytitle("President Bush approval rating") xtitle("Month/year of poll")
+
+*legend(off)表示不要图例，rcap是带帽全距条形，就是一个竖杠的两端加上了小横线，同样的这里的conlow是con这个变量的取值的95%的置信下限，conhi是其置信下限
+

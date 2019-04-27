@@ -1,0 +1,766 @@
+ 
+use canada
+
+*这里需要先cd 到存放数据的地址。或者打上完整的路径名如：
+
+use C:\Users\Administrator\Desktop\Stata\data\append\stata14canopen\canada.dta
+
+*老师发的数据数据里面并没有名为canada的dta格式的数据，有一个raw格式的canada数据文件，可以通过infile  str30 place pop unemp mlife flife type using canada.raw, automatic
+*这一行命令来读取这个raw格式的文件，然后再通过save "canada.dta"进行保存，这样才可以使用use canada这样的命令，因为use只能打开stata格式的数据文件，也可以复制粘贴在保存。 
+
+describe
+d
+*看一下数据的分布特征
+
+l
+
+rename var1 place
+rename var2 pop
+rename var3 unemp
+rename var4 mlife
+rename var5 flife
+*重命名
+l
+	
+label data "Canadian dataset 0"
+*给数据集加标签
+
+
+*给变量名加标签
+label variable place "Place name"
+label variable unemp "%15+ population unemployed,1995"
+label variable mlife "Male life expect ancy years"
+label variable flife "Female life expectancy years"
+label variable pop "Population in 1000s,1995"
+*给变量名加标签
+d
+
+
+*计算相关系数矩阵
+correlate unemp mlife flife 
+*这里计算了三个变量的相关系数矩阵
+
+*定义一个新的变量并且根据另一个变量的取值给他赋值
+gen type=1
+replace type=2 if unemp>10 & unemp<15.
+replace type=3 if unemp>=15 & unemp<.
+replace type=4 if unemp==.
+
+*定义一个新的变量根据unemp进行赋值，.代表缺失值，在stata里面默认缺失值最大
+*给变量值加标签，这里是一套组合
+
+label def label1 1 "low" 2 "median" 3 "high" 4 "missing"
+label values type label1
+l
+
+*上面两行代码通过类似于定义变量的方法给变量值定义标签，。。
+
+*数据排序
+sort pop
+l
+*根据pop这一列进行升序排列
+sort place
+l
+	
+*变量排序
+ order place unemp mlife flife pop
+ l
+ *排列变量名的左右顺序，按照place到pop从左到右排序
+ 
+ 
+ edit place unemp if pop>100
+ *如果pop的值大于100，对unemp和place进行编辑
+ 
+ 
+ list in 7/13
+ *显示数据文件的7到13行
+ 
+ sort pop
+l in -5/l
+*显示倒数第5行到最后一行那里是l不是一
+
+*计算描述性统计量
+ su if pop<20000
+ *su是summarize就是描述统计的集合
+ su
+ 
+ su if place!="Canada"
+ *对于place里面的取值不是Canada的行计算描述统计量
+ 
+ *对个别变量计算描述性统计量的值
+ su unemp mlife flife if pop>100&pop<20000
+ 
+ *与&或|非！=
+ 
+ l if unemp<9|(mlife>75.4&flife>=81.4)
+ 
+ sort unemp
+l if unemp>15
+
+*列联表
+ tabulate place unemp if unemp>15&unemp<. 
+ *二维列联表
+ 
+ tabulate  place if unemp>15&unemp<.
+ 
+ tabulate unemp
+ *后面后面两个是列联表，一个是频数分析表
+ 
+ l
+ 
+ *样品的删除
+ drop in 12/13
+ *删除12到13行
+ l
+
+ drop if place=="Canada"
+l
+*删掉place的取值为Canada的行
+
+*保留变量，这也是删除的一种，没有保留的会被删除
+
+ keep place pop unemp
+ 
+ *保留这三列
+ 
+l
+
+
+
+*generate gap=flife-mlife
+
+*创建名为gap的变量其中的其中的取值是flife-mlife，这里会报错因为上面 keep place pop unemp这一行删除了除了place pop unemp之外的所有列，所以在进行这个操作的时候
+*内存中已经没有flife和mlife这两列了，解决办法就是把这句放在keep前面，或者在读取一遍数据在做。
+
+ use canada
+ 
+ *不知所云
+ search rc 4
+ 
+ *这段运行完了会出现一个窗口标题为Search of official help files，好像不是我以为的搜索数据表中的符合条件的数据，而是查找官方帮助文件
+ 
+ *好像和上面重复了
+ use canada,clear 
+
+ * generate gap=flife-mlife
+
+ *上面这句也会报错，因为刚刚读入的数据的变量名是var1-var5没有flife和mlife，所以下面有重命名了一下再定义的gap
+
+l
+ rename var1 place
+ rename var2 pop
+ rename var3 unemp
+ rename var4 mlife
+ rename var5 flife
+ l
+ ge gap=flife-mlife
+ l
+ 
+ *label的缩写la
+ 
+ la variable gap"Female-male gap life expectancy"
+ d
+ 
+ *save
+
+ *这个save也会报错是因为原地址中有名为canada的格式为dta的文件，可以将其保存到其他的地址下或者改一下名字例如canada1等等，或者save的时候replace
+ 
+*保存并且替代原文件
+
+ save,replace
+ 
+ d
+ 
+ *应该是设置数据保留的小数点位数
+ 
+ format gap %4.1f
+ 
+ *gap这个变量中的数保留4位整数，1位小数（float型数据），输完这行在敲一个d就可以看到gap float %4.1f，list就可以看到gap中的数据只有一位小数了。
+ 
+ l
+ list if gap==5.9
+ 
+ *save的缩写sa
+ sa,replace
+ 
+ *整列替换数据
+replace pop=pop*1000
+
+ l
+ use canada,clear
+ l	
+
+ *还是创建变量利用其它变量的取值给他赋值
+ 
+ ge type1=1
+ 
+ *定义一个名为type1的变量并且初始化为1
+ 
+ l
+ replace type1=2 if place=="Yukon"|place=="Northwest Territories"
+ replace type1=3 if place=="Canada"
+ l
+ 
+ *给变量值加标签，这里是一套组合
+ 
+ la variable type1"Province,territory or nation"
+ *给变量type1加标签
+ 
+ la values type1 typelbl
+ *这里相当于是定义了一个“隐形变量”tupelbl它是type1这个变量的取值的标签
+ 
+ la define typelbl 1 "Province" 2 "Territory" 3"Nation"
+ *如果type1的取值为1则标签为province。。。
+ 
+ l
+ l place flife mlife gap 
+ 
+ *取对数
+ ge loggap=ln(gap)
+ l place loggap
+
+*使用添加了取值标签的数值型变量的取值创建字符型变量
+
+*decode type ,gen(typestr)
+decode type1 ,gen(typestr)
+
+*这句代码也很奇怪虽然不会报错，但是在这之前并没有定义type(可能是老师的数据里面有type，而我导入错了)因此这里的typestr不知道从哪来的，应该是要改为decode type1 ,gen(typestr)会比较好
+
+*list的时候不显示标签
+
+*l type typestr,nolabel
+l type1 typestr,nolabel
+*果然虽然上面没有报错这里还是报错了
+
+*在不显示标签的时候type1这个数值型变量显示的是数值，typestr这个字符型变量显示的是字符
+
+*decode的反向操作，encode。依据字符串变量创建一个添加了取值标签的数值型变量，本质上是创建了一个数值型变量
+
+encode place,gen(placenum)
+
+*根据place这个字符型变量创建一个数值型变量placenum，但是placenum是有标签的，需要list, nolabel才能看见其原来的取值
+
+*l type type1 place placenum ,nolabel
+*这句也是不行不如改成下面的：
+
+l type1 typestr place placenum ,nolabel
+
+*将实际上是数字的字符型变量转化为数值，其中如果有不是数的会变成缺失值
+
+*generate idnum=real(id) 这句也报错意思是说没有id这个变量 
+
+*利用real这个函数提取字符型变量id中的数字保存为数值型变量idnum
+
+*另一种将字符型变量转化为数值型变量的函数
+
+*destring var17 ,gen(var17num) 这句也报错意思是说没有var17这个变量
+
+*课本上最后面加了force。定义一个名为var17num的变量其取值为var17这个变量转化为数值的取值
+
+*好像是强制转化为数值型变量
+
+*tostring  unemp2,replace 这句也报错，还是说没有unemp2这个变量  
+
+*生成虚拟变量和定序变量
+
+rename type1 nature
+
+*虚拟变量（0-1变量|哑变量）
+
+tabulate type,gen(type)
+
+*根据type这个变量创建虚拟变量，对应关系要看实际情况，一般如果分类变量的取值为1,2,3那么会对应的创建type1，type2，type3三个虚拟变量
+
+
+*这个sum和su、summarize一样都是计算描述性统计量而不是求和，不信可以自己试一下
+
+sum unemp
+
+*
+gen unemp01=0 if unemp<r(mean)
+*
+replace unemp01=1 if unemp>=r(mean)& !missing(unemp)
+list
+gen unemp11=(unemp>=r(mean) & !missing(unemp))
+l
+
+
+*自动重编码|自动分组
+gen pop1=autocode(pop,3,30,11130) 
+
+*将pop这个变量中从30到11130的取值区间分成等宽的3组
+
+*recode函数
+recode pop(30/3730=1) (3730/7430=2) (7430/11130=3),gen(pop2)
+l
+
+*根据pop创建数值型变量pop2，当pop是30-3730时取值为1，。。这里由于Canada这一行的pop取值超过了11130，所以Canada这一行的pop2的取值不是1,2或3而是原来的值
+ 
+*瀵煎叆鍏朵粬绋嬪簭鐨勬暟鎹細infile銆乮nsheet銆乮nfix绛?
+
+cd e:\statakejian\shuju12.0
+
+*导入其他程序的数据
+
+*这个可以通过菜单窗口实现，也可以用代码
+
+*读取xlsx文档
+import excel "C:\Users\Administrator\Desktop\Stata\data\append\canada.xlsx", sheet("Sheet1") firstrow clear
+
+*sheet("Sheet1")用于选定表格中的sheet1这个表，一般的一个Excel文件会有三个表格。课本上还有cellrange(a5:o56)表示读取a5到o56的数据，firstrow()表示读取的这些数据的第一行是变量名
+
+*读取csv文件
+infile year production capital labor using C:\Users\Administrator\Desktop\Stata\data\shuju10.0\citywater.csv,clear 
+ 
+*infile与using之间的是变量名
+edit
+clear
+
+infile year production capital labor using C:\Users\Administrator\Desktop\Stata\data\shuju10.0\citywater.csv in 2/19,clear
+
+*这里是对上面的改进，因为上面读入的时候由于原文件中的第一行是变量名因此都变成了缺失值，这里在读取的时候就只读取了第二到第十九行
+
+edit
+
+*利用insheet读取制表符分隔数据
+insheet  using C:\Users\Administrator\Desktop\Stata\data\shuju10.0\citywater.csv,clear
+edit
+clear
+
+insheet  using C:\Users\Administrator\Desktop\Stata\data\shuju10.0\canada4.txt
+edit
+
+insheet  using C:\Users\Administrator\Desktop\Stata\data\shuju10.0\canada2.txt,clear
+edit
+clear
+
+*这里的读取和下面的读取都有问题可以自己运行一下看看
+infile  place pop unemp mlife flife type using C:\Users\Administrator\Desktop\Stata\data\shuju10.0\canada3.txt, automatic
+clear
+
+*place前面加上str30，type的前面加上str20读取的数据就完整了，原因是infile读取的默认是数值型数据，需要在字符型数据前面加上str加数字数字是字符的长度，d一下就可以看到了
+
+infile  str30 place pop unemp mlife flife type using C:\Users\Administrator\Desktop\Stata\data\shuju10.0\canada1.raw, automatic clear
+clear
+
+*这一行是对上两行的修正
+infile  str30 place pop unemp mlife flife str20  type using C:\Users\Administrator\Desktop\Stata\data\shuju10.0\canada1.raw, automatic clear
+edit
+
+*读取并且分隔只有一列的数据
+
+infix year 1-4 wood 5-8 mines 9-14 cpi 15-18 using C:\Users\Administrator\Desktop\Stata\data\shuju10.0\nfresour.raw,clear
+edit
+
+*1-4行的数据放在year这个变量里面，5-8行放在mins这个变量里面。。。
+
+outfile  using canada7
+
+*将正在处理的数据保存为名为Canada7的raw格式的数据文件
+
+edit
+
+*数据的转置、变换、分拆：XPOSE、reshape、collapse、statsby
+
+use growth1,clear
+l
+
+*转置
+xpose,clear varname
+l
+
+*相关系数矩阵
+
+correlate v1-v5  in 2/5
+
+*用v1到v5这五个变量的2到5行的数据计算v1到v5的相关系数矩阵
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\growth1,clear
+edit
+l,nolabel
+d
+l
+
+*面板数据的长格式与宽格式的相互转化
+
+reshape long grow,i(provinc2) j(year)
+l
+
+*将宽格式转化为长格式创建一个新的变量grow用于储存样品数据，创建一个名为year的变量，其取值为原数据中第二列到最后一列的变量名对应的年份，假设原来的数据有m列n行，
+*那么转化后的数据有(m-1)*(n-1)行数据，在加一行变量名。创建一个名为province2的变量其取值为原数据的第一列的值分别重复重复m-1遍，一共有n-1个不重复的数据
+
+list, sepby(provinc2)
+
+*sepby(provinc2)是根据province2画横格，可以list，sepby(year)对比一下就很清晰了
+
+label data "Eastern Canadian growth--long"
+label variable grow "population growth in 1000s"
+
+*连线标绘图，见第三章
+graph twoway connected grow year if provinc2<4,yline(0) by(provinc2)
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\growth3,clear
+list, sepby(provinc2)
+
+*将长格式的数据转化为宽格式的数据
+
+reshape wide grow,i(provinc2) j(year)
+l
+
+*分类汇总
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\growth3,clear
+collapse (mean) grow, by(provinc2)
+l
+
+*利用provinc2这个变量对grow求均值，比如provinc2的取值有1,1,1,2,2,2,3,3,将其取值相同的对应的grow这个变量的中的数求均值，并且将求得的均值保存在grow这个变量中。
+*在各个数据中province2有5个取值然后就得到了grow的均值的5个数据，后面的数据会覆盖前面的数据
+
+*将summarize计算出来的所有的描述性统计量保存为新的数据
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\growth3,clear
+statsby , by(provinc2):summarize grow
+d
+clear
+
+*按照provinc2这个变量进行分组计算grow的描述性统计量并分别保存在对应的变量名的列下，具体的变量名课本P49
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\growth3,clear
+statsby meangrow=r(mean), by(provinc2):summarize grow
+d
+l
+
+*创建一个名为meangrow的变量取值为grow的按照provinc2这个变量进行分组计算所得的均值.这个操作之后数据集中只会有province2和meangrow两列数据，
+*如果想要向向上面那样都保存下来需要写多个像meangrow=r(mean)这样的
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\growth3,clear
+statsby _b _se, by(provinc2): regress grow year
+d
+l
+
+*没看懂，regress应该是回归的意思，但是这个就，，
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\growth3,clear
+l
+
+*数据排序
+
+gen caseid=_n
+l
+
+*定义一个名为caseid的变量其取值为观测案例号
+
+sort unemp
+l
+
+*按照unemp这个变量对数据进行升序排列，这里还是会报错，原因是growth3里面并没有unemp这一列，可以用Canada1这个数据
+
+gsort -unemp
+
+*按照unemp进行降序排列
+
+gsort -unemp,mfirst
+
+*按照unemp和mfirst进行降序排列
+
+gsort -unemp,gen(unemp1)
+
+*创建一个名为unemp1的变量其取值是unemp的排序的序号从1到。。，类似于秩，当有大小相同的值是相同的
+
+egen unemp2=rank(unemp)
+
+*创建名为unemp的变量其中的取值为unemp的秩
+
+sort caseid
+
+*定义一个名为unemp2的变量其取值是unemp的秩
+
+*数据的分拆
+
+drop rep78 headroom
+l
+
+*删除变量名为rep78 headroom的列，这个连数据是啥都不知道，随便找个数据练手吧
+
+keep make price mpg
+l
+
+*保留变量名为make price mpg列，数据用的应该就是下面这个usaauto
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\usaauto,clear
+keep if foreign==1
+save foreignauto, replace
+l
+
+*保留foreign的取值为1的行，将处理后的数据保存为名为foreignauto的stata数据文件，默认是dta格式
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\usaauto,clear
+drop if foreign==1
+l
+save domesticauto, replace
+
+
+
+*删除foreign这个变量取值为1的行，将处理后的数据保存为名为domesticauto的dta格式的文件
+ 
+* use newf1,clear,不知道为什么放了这句代码
+ 
+*合并数据
+
+*下面这个应该是叫纵向合并|向数据集中添加个案|向数据集中添加样品观测值
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju12.0\lakewin1,clear
+l in -4/l
+use lakewin2
+l
+append using lakewin1
+save lakewin3
+
+*在lakewin2的下面|后面追加lakewin1的数据，这种合并方式应该是要列有相同的意义，当然没有意义也可以合并
+
+
+*数据的横向合并|向数据集中添加新的列|添加新的变量
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju12.0\lakesun
+drop _merge
+sort year
+
+*一般的需要对原数据集和新的数据集都按照一列共有的数据进行排序
+
+save,replace
+
+*用排序之后的数据替代原来的数据
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju12.0\lakewin3
+sort year 
+merge 1:1 year using C:\Users\Administrator\Desktop\Stata\data\shuju12.0\lakesun
+
+*根据year这一列进行横向合并，一般的横向合并至少需要有一列相同的列
+
+
+
+*缺失值重编码
+
+use C:\Users\Administrator\Desktop\Stata\数据\data12\Granite2011_6
+
+d
+tabulate      genint
+
+*做genint列数据的频数统计表(输出结果中即包括变量各个取值(带有标签的)下的频数也包括频率还有累积频数，)。这里最下面的两行是don't konw和no answer
+
+tabulate      genint,nolabel
+
+*几乎与上一行完全一样但是不含标签，区别自己运行一下看看吧。这里的最下面两行是98和99
+
+tabulate educ,su(genint)
+
+*educ的与genint的描述性统计量(在这个里面只包含了均值和标准差)的列联表，educ的取值是列，
+
+ge genint2=5-genint if  genint<90
+
+*定义了一个名为genint2的变量，取值。。。课本中说的反向编码，见29页。
+
+replace genint2=.a if genint==98
+replace genint2=.b if genint==99
+
+*这里这样操作主要是因为很明显上面没有了genint>=90的情况，将取值为98即don't konw赋值为.a,将取值为99即no answer的赋值为.b，这样做是为了区别不同的缺失值
+
+tab1 genint genint2
+tab1 genint genint2,nolabel
+
+tab1后面是1不是l，这两行代码都是对跟他和genint2分别作了一个列联表
+
+tab genint genint2
+
+*这里是做了genint和genint2的二维列联表
+
+tabulate educ,su(genint)
+tabulate educ,su(genint2)
+
+label  define   genv    4   "ex intrest"  3 "very"    2  "some"    1   "not very"    .a  "DK"   .b  "NA"
+label values genint2  genv
+
+*组合操作，给genint2添加值标签，变量取值与标签对应关系见上一行
+
+edit     genint genint2
+edit     genint genint2,nolabel
+
+*编辑
+
+d
+mvdecode genint income age,mv(97=.\98=.a\99=.b)
+clear
+
+*与上面501行与502行是近似的操作但是更加高效，可以一次将多个变量的多个不同值定义为缺失值
+*这里是将变量的某些取值定义为缺失值，详情可以用help(decode)查看。(将指定varlist中numlist的出现更改为a缺失值代码),具体到这就是将这三个变量中97,98,99分别替换为.,.a,.b
+
+
+*日期函数见课本31页-33页
+
+help date function
+
+*使用help可以查看后面这个变量或参数等的含义与使用的例子等
+
+use C:\Users\Administrator\Desktop\Stata\数据\shuju12.0\global1
+d
+l   in   1/12
+ge edate=mdy(month, 15,year)
+l   in   1/12
+
+*mdy(month,day,year)这里课本上写的是day取15是一种使用月度数据的替代方式，以为这里只有每个月的平均值的数据，而没有每一天的数据，结果edate中的数据是到19601月1日的
+*天数，至于为什么是到1960年1月1日可能是因为stata的开发人员将1960年1月1日定义成了基准年。
+
+*定义日期格式
+
+format edate %tdmCY
+
+*这个会将日期格式化为显示月份(m),世纪(C),年份(Y)的格式
+
+edit
+graph  twoway   line    temp edate
+
+*绘制一幅连线标绘图详情见第三章
+
+*标注变量下标。见课本39页
+
+ge  idnumber=_n
+l   in   1/12
+
+*定义一个名为idnumber的变量其中的取值为每一个case的序号
+
+display temp[4]
+
+*显示temp这个变量的第四个case的值
+
+ge dtemp= temp- temp[_n-1]
+l   in   1/12
+clear
+
+*定义一个名为dtemp(temp的一阶差分)的变量，其取值为temp这个变量的每一个case的值减去其前一个case的值
+
+
+*使用权数上课的时候没讲，想要了解的看课本52页
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju12.0\Nations2
+d
+l country region gdp school adfert chldmort   in 1/20
+d country region gdp school adfert chldmort
+d life
+su life
+d pop
+
+*前面这几行没得意思应该不用解释了，country region gdp school adfert chldmort都是数据集中的列名|变量名
+
+su life [fweight=pop]
+
+*以pop的取值作为频数权重计算life的描述性统计量
+
+
+*生成随机数据和随机样
+
+ge   random=runiform( )
+
+*在已经读入数据的基础上可以用这条命令生成一列"随机"的取值范围为[0,1)的均匀分布的数据，会生成与读入的数据相同长度的数据，并且放在当前数据集的最后一列
+
+l random   in   1/12
+  su random
+clear
+
+*咋没有读入数据的时候可以通过下面的方式在不同的分布中"随机"的抽取数据
+
+set obs 2000
+
+*设定变量的长度，在没有读入数据的时候需要设定|内存中没有数据时
+
+set seed 12345
+
+*设置种子，设置种子主要是为了复现结果，因为电脑生成的随机数是伪随机数，可以通过种子控制，只要设定了种子，在相同的分布相同的抽样方法下，无论在抽取多少次得到的都是一组相同的"随机数"
+*如果想要复现，每次抽取数据的时候都要设定种子，向下面这样抽取了5次却只设定了一次种子，则只有第一次抽取的可以复现，别的都不能
+ge randnum=runiform( )
+
+*在取值范围为[0,1)的均匀分布中随机的抽取2000个数据
+
+ge newvar=428*runiform( )
+
+ge newvar2=1+int(428*uniform( ))
+
+*int取整函数，这行代码得到就是一串从1到428的数(取不到429)
+
+ge newvar3=1+int(6*runiform( ))
+
+*一组从1到6的数
+
+*下面这一行老师给的应该是打错了，想要做的应该是generate roll。。.这里我自己改成了我认为正确的代码
+
+*help roll=ceil(6*runiform( ))
+ge roll=ceil(6*runiform( ))
+
+*生成的数据取值范围为[1,6].关于ceil():Description: the unique integer n such that n-1 < x <= n; x (not “.”) if x is missing, meaning that ceil(.a) = .a
+*意思没看懂，但是这个函数类似于
+
+su   newvar3
+tabulate newvar3
+ge newvar4=1+int(6*runiform( ))+1+int(6*runiform( ))
+
+*定义一个。。，从。。抽取。。。，取值范围为[1,12]
+
+tab newvar4
+ge    x=rnormal( )
+ge    x1=rnormal(500,75 )
+
+*从均值为500方差为75的正态分布中随机的抽取2000的数据
+
+su x x1
+ge v= exp(rnormal(  ))
+
+*在标准正态分布中随机的抽取2000个数据，然后再求以e为底指数值
+
+ge    x2=-3*ln(runiform(  ))
+
+*取对数
+
+ge    x3=   rbinomial(10,0.2)
+
+*在实验次数为10，成功的概率为0.2的二项分布中抽取。。
+
+ge   x4=rchi2(5)
+
+*在自由度为5的卡方分布中抽取。。
+
+ge    t45=rt(45)
+
+*在自由度为45的t分布中抽取。。。
+
+*下面的解释详情见课本56页
+
+clear
+drawnorm z,n(5000)
+
+*生成一个名为z的变量其中取值随机抽取的5000个服从标准正态分布的数据
+
+su z
+mat c=(1.,0.4,-0.8\0.4,1,0\-0.8,0,1)
+
+*mat是matrix即矩阵的缩写
+
+drawnorm y1 y2 y3, means(0,100,500) sds(1,15,75) corr(c)
+
+*生成y1,y2,y3三个变量，其取值是从均值分别为0,100,500，标准差为。。。，且三个总体的协方差矩阵均值为c的正态分布中随机抽取的
+
+correlate  y1-y3
+
+*计算y1,y2,y3两两之间的协方差，输出的是协方差矩阵
+
+su  y1-y3
+
+sample 10`
+
+*在所有的数据中抽取10%的数据，实际上是"随机"抽取了10%的，然后删除了剩余的90%的数据，经过这个操作后数据集中只有原来的数据10%的数据了。
+
+d
+sample 10,count
+
+*在上一步的基础上的数据集中抽取10条个案|数据|行
+
+d
+l
