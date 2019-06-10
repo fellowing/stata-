@@ -1,0 +1,296 @@
+cd e:\statakejian\shuju10.0
+log close
+log using ch7
+doedit ch7
+
+*前四行没啥用
+
+*读入数据
+use "WAGE (2).DTA", cleard
+
+su  wage educ exper tenure nonwhite female married south
+*计算值几个变量的描述性统计量su是summarize的缩写
+
+graph box wage ,over( educ ) marker(1,mlabel( educ ))
+*按照educ分类画wage的箱线图，并用mlabel里面的第一个变量即educ标记极端值
+
+regress wage educ
+*做自变量为educ因变量为wage的一元线性回归
+
+*边际影响：
+margins,at( educ=(5 15)) vsquish
+*输出结果中有educ取值分别为5和15的条件下wage的预测值，预测的标准误，预测值的95%置信区间等。vsquish可以减少输出结果中的空白行。
+
+
+margins,at( educ =(0(2) 18)) vsquish
+*计算educ的取值从0到18间隔为2的wage的预测值，当educ取值为0是实际上的预测值就是截距，相邻两项的差是二倍的斜率。
+
+marginsplot
+*将上面计算出来的预测值与95%预测区间画在一张图中
+
+regress wage educ,nocons
+*nocons表示没有截距项
+
+scatter wage educ|| lfit wage educ
+*画出wage与 educ的散点图，与线性拟合图
+
+clear
+use d:\shuju10.0\FERTIL1.DTA
+
+correlate kids educ feduc age year
+*计算着几个变量之间的相关系数矩阵，这是一个下三角的矩阵
+
+correlate kids educ feduc age year,means
+*计算着几个变量的相关系数矩阵与均值，会先输出一个含有均值、方差、最大值、最小值的矩阵，然后输出相关系数矩阵
+
+correlate kids educ feduc age year,covariance
+*计算这几个变量之间的协方差矩阵
+
+pwcorr kids educ feduc age year,star(0.05)
+*计算着几个变量之间的相关系数矩阵，如果在显著性水平为0.05的条件下这个显著相关，用星号标记
+
+pwcorr kids educ feduc age year,sidak sig star(0.05)
+*。。，sidak sig会在上一步的基础上加入p值
+
+graph matrix  educ feduc age year kids
+graph matrix  educ feduc age year kids,half
+*画出这个几个变量的两两之间形成的散点图矩阵，一行是完整的，另一行是一半，实际上一般都用散点图矩阵的一半
+
+graph matrix  educ feduc age year kids if  !missing( educ,feduc,age,year,kids),half
+*也是画散点图矩阵，这次的数据是不包含缺失值的数据
+
+regress kids educ feduc age year
+regress kids educ  age agesq   black 
+*做因变量kids关于这几个变量的多元线性回归
+
+margins,at( educ=(12 16 20)) vsquish
+*计算在educ分别等于(12 16 20)时对kids的边际效应。根据课本上解释应该是，在educ分别取12 16 20时i，其他变量取所有值是kids的平均预测值。相当于其他变量都不变时
+*educ取这几个值时kids的预测值，同样的每两个相邻的值只差等于4倍的educ的系数
+
+margins,at( educ=(12 16 20) black=(0 1)) vsquish
+*计算在educ=(12 16 20) black=(0 1)时的边际，这里会有六种情况即C31*C21(排列)。这是由这六种情况可以看出，相同的学历水平下，黑人的生育欲望要强于非黑人的。
+
+marginsplot
+*这时会按照黑人和非黑人两类画出一对平行线。这说明两个变量之间没有交互作用，即黑人无论受教育年限多高都会比非黑人的生育意念高，但这不一定是合理的，可以考虑交互作用。
+
+regress kids educ  age agesq   black,beta
+*在回归方程的后面加上beta，这时会在模型的输出结果中加入β系数，即在输出结果的最后面加入标准化变换的系数，这时不再有截距项。
+
+regress kids educ  age agesq   black
+test   age agesq
+*对age与agesq的联合效应是否显著进行检验，该检验类似于回归模型的显著性检验，原假设是age与agesq的系数同时为零。有时两个变量的t检验都不显著时，其联合检验的结果可能显著。
+
+test  educ  age agesq   black
+*对这几个自变量的联合效应进行检验，输出结果等于回归模型的F检验的结果
+
+test black=1
+*检验black的系数是否等于1
+
+tab  year
+*tab是tabulate缩写，这里是做year的频数分析表，里面包括频数、频率和累计频率
+
+tab  year ,gen(year)
+*根据year这个分类变量建立虚拟变量，一共有七个年份，因此会创建7个虚拟变量
+
+d year*
+*这里的意思应该是describe前四个字母为year的变量
+
+tab year1
+*做一个关于year1的频数分布表
+
+d
+l  kids y74 year2 y84 year7 bldck   in 1/20
+*list第一行到第20行的数据
+
+l  kids y74 year2 y84 year7 black  in -20/l
+*list倒数第20行到最后一行的数据
+
+table  year black,contents( mean kids)
+*以year和black为分类变量计算kids的均值 
+ 
+tab year black,sum(kids) means
+*这里实现的是和上面一行类似的功能其中的sum是summarize的缩写，这里会比上面的多出来一行和一列的总计
+
+regress kids educ  age agesq y74 y76 y78 y80 y82 y84 black
+*这里做kids关于这几个变量的多元线性回归，但是关于year的虚拟变量值引入了6了为了防止虚拟变量陷阱，虚拟变量的作用都是与没有引入的那个虚拟变量进行比较
+
+ttest  kids,by(y84)
+ttest  kids,by(y74)
+ttest  kids,by(black)
+*这实际上是比较均值的t检验，将kids按照括号中变量的取值分类(这里都是分成两类因为这三个都是虚拟变量都只有0、1两种取值)，检验类与类之间的均值是否相等
+
+regress  kids black
+predict kidshat
+*利用上面的模型对kids进行预测将预测出来的值保存在kidshat这个新定义的变量里面
+
+l  kids kidshat in 1/20
+graph twoway  scatter  kids kidshat black,msymbol(oh  S)   ||  lfit  kids  black
+*这个图能画出也是很神奇，因为在二维平面上画图这里却有三个变量，分别是因变量kids和kidshat自变量black，kids和kidshat关于black的散点图的点的形状分别是oh和S，这时
+*因为自变量只有0和1两个取值，因此画出来的散点图是两条竖线
+
+graph twoway  scatter  kids kidshat black,msymbol(oh  S)  jitter(5)  ||  lfit  kids  black
+*加入这个可以膨化效果jitter(5)，可以使数据点看起来更分散
+
+regress kids educ  age agesq y74 y76 y78 y80 y82 y84 black
+regress kids educ  age agesq y82 y84 black
+test y82= y84
+*检验y82和y84的系数是否相等
+
+ge   y74educ=y74*educ
+regress  kids educ  age agesq y82 y84 y82educ y84educ black
+*引入交互作用
+
+regress  kids educ  age agesq   y82educ y84educ black
+*删除t检验不显著的变量
+
+predict  kidshat1
+*利用该模型进行预测，预测值保存在kidshat1这个变量中
+
+scatter kids educ || connected  kidshat1 educ ||  ,by( black )
+*根据black这个变量分类画出kids关于educ的散点图、kidshat1关于educ的连线标绘图
+ 
+scatter kids y84 , msymbol(Oh)|| connected  kidshat1 y84 ,msymbol(+)||  ,by( black )
+
+regress  kids c.educ  i.y84 c.educ#i.y84 age agesq black
+*c.educ表示educ是数值型变量(连续型变量)，i.y84表示y84是分类变量(标识变量、二分变量)，c.educ#i.y84表示交叉项
+
+regress  kids  c.educ##i.y84 age agesq black
+*当回归中有类似于这种时c.educ##i.y84表示即包含着两个变量的主效应也包含这个两个变量之间的交互效应
+
+tabstat educ,stats(mean min max) by (year)
+*根据year分类计算educ的mean min max这个几个统计量的值
+
+margins,at(educ=(0(4)20)  y84=(0  1))  vsquish
+*educ有6，0、4、、20个取值y84有连个故，共有12中情况
+
+marginsplot, xlabel(0(2)20)
+*这时候画出来的图是有交叉的而不是平行的，说明educ与y84之间确实存在交互作用，随着学历的增加84的kids的数量要比非84年的下降的更快
+
+margins,at(educ=(0(4)20)  black=(0  1))  vsquish
+*6*2的边际效应
+
+marginsplot, xlabel(35(5)54)
+*这个边际图依然是平行的这样不一定合理，要想画出边际图，首先要计算边际
+
+regress  kids  educ age c.educ#c.age  y84 black
+su  educ age
+ge   educ0= educ-12.69
+ge  age0= age-43.48
+*定义新的变量等于原来的变量减去均值。对中变量(中心化变量)，这样处理可以减小交互作用之间的共线性
+
+ge  ed_age0= educ0*age0
+su   educ
+ge   educ00= educ-r(mean)
+*定义变量educ00其取值为educ减去其均值，这里一定要有前面的那句
+
+regress kids educ0 age0 ed_age0
+regress kids c.educ0 c.age0 c.educ0#c.age0
+*对异方差不做处理时的回归方程
+
+regress kids c.educ0 c.age0 c.educ0#c.age0,vce(robust)
+regress kids c.educ0 c.age0 c.educ0#c.age0,robust
+*在回归时使用方差的稳健估计量，这样做不会改变回归模型的系数的估计值但是会改变模型的方差估计与t值等，使回归系数的检验更有效这两行我试着是一样的
+
+regress kids c.educ0 c.age0 c.educ0#c.age0,vce(cluster year)
+*参考课本176页。年份之间存在差异，即按照年份进行分组时，组与组之间存在显著性差异，这里可以得到year定义的聚群间的稳健标准误
+
+use "WAGE (2).DTA", clear
+d
+regress wage educ exper expersq tenure nonwhite female married numdep smsa
+predict wagehat
+predict wagee1,res
+*利用上面的模型对wage进行预测，预测结果的残差保存在wagee1这个变量中，这里不再保存对wage的预测值。其中res是resid缩写，predict还可以计算的统计量见181页。
+
+su  wage*
+*对前四个字母为wage的变量进行描述性统计分析
+
+*多重共线性的诊断-方差膨胀因子
+estat vif
+*一般的当VIF的值大于等于10时就认为回归方程存在显著的多重共线性
+
+estat vce,correlation  //给出系数的相关系数矩阵，可以帮助检验共线性
+
+estat vce
+*这个表格的标题是Covariance matrix of coefficients of regress model。翻译的话是回归模型系数的协方差矩阵
+
+estat  hettest
+*异方差检验，方差齐性检验。原假设是方差为常数。或者说没有异方差
+
+*怀特检验
+estat imtest, white
+*这也是异方差的一种检验方法。原假设是同方差。具体的异方差假设形式见计量经济学
+
+*偏态-峰度检验
+sktest  wagee1
+*见课本177页。原假设是残差服从正态分布
+
+*残差图
+scatter  wagee1 wagehat,yline(0)
+*残差值关于预测值的散点图
+
+scatter  wagee1 wagehat|| lowess  wagee1 wagehat|| ,yline(0)
+*加入了lowess曲线(局部加权的散点修匀)
+
+*由于上面的一系列检验显示存在异方差，所以下面是对异方差形式，以及异方差的处理的探索
+regress wage educ exper expersq tenure  female  smsa
+
+estat imtest, white
+
+predict wagee2,res
+regress lwage educ exper expersq tenure  female  smsa
+estat imtest, white
+*略
+
+regress wage educ exper expersq tenure  female  smsa [w=1/wagee2^2]
+*回归模型采用加权最小二乘估计，权重为1/wagee2^2。
+
+estat  hettest
+*检验一下加权最小二乘估计是否消除了异方差
+
+regress wage educ exper expersq tenure  female  smsa,r
+*从上面的检验可以看出这样做并没有消除异方差，因此采用稳健估计量。其中r是robust的缩写
+
+predict wagehat2
+predict wagehatst2,stdp
+*预测y均值的标准误
+
+scatter  wagee2 wagehat2|| lowess  wagee2 wagehat2|| ,yline(0)
+
+estat ovtest
+*对模型中是否遗漏变量进行检验。原假设是模型没有遗漏的变量
+
+*残差图
+rvfplot
+*这是一种画残差图的简便方法，可以加入mlabel()用于给散点图加标签。具体的见课本192页，横轴是预测值，纵轴是残差。
+
+*
+avplots
+*见课本193页
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\wage2.dta
+
+gen expersq = exper^2
+
+gen lwage=ln(wage)
+*下面这个几行中有两个变量是原来没有的因此需要创建一下。
+
+*ssc install estout这一行是安装estout这个软件包，estout包中有esttab这个函数(不一定就是老师要找的那个)没有下载的需要运行这一行。
+*安装完estout这个软件包之后esttab就可以用了，此处是参考了某经济论坛的一个答案，方法应该不唯一。
+
+qui  reg wage educ exper expersq tenure nonwhite female married numdep smsa
+*qui是quietly的缩写，运行qui后面的语句时不输出结果
+
+est sto ols1
+*实现的效果是将上一行代码实现的结果保存在ols1这个变量中，est 和 sto应该也是某个词的缩写。
+
+
+qui  reg wage educ exper expersq tenure  female  smsa
+est sto ols2
+qui  reg lwage educ exper expersq tenure  female  smsa
+est sto ols3
+qui  qreg wage educ exper expersq tenure  female  smsa,q(0.5)
+est sto qr5
+*qreg是分位数回归的意思，后面的q(0.5)即0.5分位数回归，或者说是中位数回归
+
+esttab ols1 ols2 ols3 qr5 ,t r2 aic bic mtitles  star(* 0.1 ** 0.05 *** 0.01)
+*创建一个表格第一列是ols1第二列是ols2、、、即四次回归的结果，包含的变量有t值 r方 aic bic ，给t值分别在这三个显著性水平下显著的参数估计值加* ** ***

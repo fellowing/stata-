@@ -1,0 +1,121 @@
+cd d:\shuju10\
+use mroz.dta
+describe
+
+*t检验(比较均值)
+ttest educ=12
+ttest educ=12, level(90)
+*单样本t检验，检验educ的均值是否等于12。下面这行应该也是educ而不是pers这个变量。这行代码输出结果的唯一区别是上面的那行输出结果中包含均值的95%置信区间，下面的是90%的
+
+*wilcoxon符号秩检验
+signtest educ=12
+*检验educ的中位数是否等于12
+
+*配对样本t检验
+ttest educ=huseduc
+*输出结果中定义了mean(diff) = mean(educ - huseduc)：先做差后求均值。
+*两独立样本t检验用类似于这种：ttest drink ,by(creek)实际上是检验了creek两个类别(这能有两个类别)在drink这个变量上的均值是否相等，即使两独立样本t检验，这里是先算均值在做差
+
+signrank educ=huseduc
+*配对样本的wilcoxon符号秩检验
+
+graph box educ ,over(inlf) ylabel(0(2)17) saving(fig6-1a)
+*根据inlf这个变量分类画出educ的箱线图，保存并命名为fig6-1a
+
+graph bar (mean) educ ,over( inlf ) ylabel(0(2)17) saving(fig6-1b)
+*根据inlf分类画出educ的均值的条形图，保存并命名为fig6-1b
+
+graph combine fig6-1a.gph fig6-1b.gph,col(2) iscale(1.05)
+*合并这两个图并且列数为2即行数为iscale(1.05)是将所有的符号标记数字字母放大1.05倍
+
+*两独立样本t检验
+ttest educ ,by( inlf )
+ttest educ,by(inlf) unequal
+*第一行是按照默认的同方差的条件下进行的t检验，下面这行是不假定同方差是进行的检验。这里还会给出等方差的检验-巴特利特(Bartlett)的χ²检验，原假设是不同水平下方差相等
+*当拒绝原假设时方差分析的有效性值得质疑。
+
+*Wilcoxon秩和检验又称曼惠特尼(Mann-Whitney)的U检验
+ranksum educ,by(inlf)
+*wilcoxon秩和检验。即检验两独立样本的中位数是否相等。这里和上面一样实际上都是检验inlf的连个类别在educ上的差异
+
+*这里少了数据的读入
+*单因素方差分析
+oneway educ kids1
+*根据kid1是因素，kid1的各个取值是水平。分析educ在kid1的各个取值上的均值是否有显著性差异，既是比较均值也相当于相关性分析。当各个水平下educ的均值没有差异时，相当于
+*这两个变量不相关。
+*分析变量的相关性时：全是分类变量是用列联表最好，有分类变量也有数值型变量时用方差分析最好，全是数值型变量时用pearson相关系数检验
+ 
+oneway educ kids1 ,tabulate 
+*加上tabulate会给出kids1的各个类别下的educ的均值、标准差、频数的统计表
+
+oneway educ kids1 ,tabulate scheffe
+*加上scheffe会给出educ在kids1的各个类别下的两两比较的t检验，可以看出来具体在哪两个水平下存在差异
+
+*图见课本142页
+graph hbox educ ,over(kids) ylabel(0(2)17) saving(fig6-2a)
+*根据kids分类画出educ的水平箱线图
+
+*描述均值的点图
+graph dot (mean)educ,over(kids1) ylabel(0(2)17,grid) marker(1,msymbol(S)) saving(fig6-2b)
+*根据kids1这个变量分类画出educ的均值的点图，点的形状是S代表的形状
+
+graph combine fig6-2a.gph fig6-2b.gph,row(2) iscale(1.05)
+*合并
+
+*Kruskal-Wallis检验(单因素方差分析的非参形式)
+kwallis educ,by(kids1)
+
+ranksum educ,by(kids1)
+
+table inlf city ,contents(mean educ ) row col
+*计算根据inlf和city分类的educ的均值，并给出行与列的总计均值
+
+*多因素方差分析
+anova educ inlf city
+*inlf与city是两个不同的因素，对educ在这两个不同的因素的不同水平下的均值进行比较。这里会分析inlf和city的主效应对educ是否有影响。分析时只要看每个变量后面的p值，相当于做了两个单因素方差分析
+
+anova educ inlf city inlf#city
+anova educ inlf city inlf|city
+anova educ i.inlf i.city i.inlf#i.city
+*这三句是等价的，都是在原来的基础上加上了交互作用的影响。方差分析时默认所有的自变量都是分类变量，加入i.是标记这个变量是一个分类变量(二分)
+
+anova educ  city kids1 c.motheduc 
+*c.是指这个自变量是连续(数值型)变量
+
+regress
+*做因变量为educ 自变量为city kids1 c.motheduc 的回归
+
+anova educ  city kids1 c.motheduc inlf#kids1
+regress
+anova educ  city inlf
+predict educm
+*利用上面的方差分析的结果对educ进行预测，将预测值保存在educm中。等价于相同形式的regress的预测值。
+
+predict seeduc,stdp
+*将预测的y的均值的标准误保存在seduce中
+
+serrbar educm seeduc kids1,scale(2) plot(line educm kids1,clpattern(solid)) legend(off)
+*画了一个不知道是啥的图
+
+margins kids1
+marginsplot
+*同回归分析一样，这里也是计算边际值，画出边际曲线
+
+anova huswage inlf city inlf#city
+predict  hum
+*预测
+
+predict  sehu,stdp
+*预测值的标准误
+
+ge huhigh=hum+2*sehu
+ge hulow=hum-2*sehu
+*近似计算95%的置信区间的上下线
+
+graph twoway connected  hum  inlf || rcap  huhigh  hulow  inlf||  ,by( city,legend(off) note(" ")) ytitle( " scale" ) text(1.7 2 "Mean '=char(177)'2SE",box margin(small)bfcolor(white))
+*根据city分类画出预测值关于inlf的连线标绘图与rcap(置信区间)的叠加图。text(1.7 2 "Mean '=char(177)'2SE",box margin(small)bfcolor(white))添加文本框
+*文本框放置在(1.7 2)的位置上，文本框中的内容是Mean '=char(177)'2SE，文本框中文字与框的距离是small，文本框的背景颜色是white
+
+margins inlf#city
+marginsplot,by(city)
+*利用这个代码可以画出来类似于上图的效果，但是细节部分不太一样。并且必须两句一起，如果少了一句就不会有图。

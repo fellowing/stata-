@@ -1,0 +1,121 @@
+cd e:\shuju10.0
+use wage1.dta
+sum wage
+su wage,detail
+*对wage做描述性统计并且显示detail。这是会比上面的那条多出来分位数、偏度、峰度、方差等。Std. Dev是标准差Standard Deviation的缩写
+
+tabstat educ,stats(mean range skewness)
+*计算educ的均值、全距、偏度，以表格的形式展示
+
+tabstat educ,stats(mean sd median iqr n) by(gender)
+*根据gender分类计算educ的均值、标准差、中位数(0.5分位数)、内距、样品数
+
+ci educ,level(99)
+*计算变量educ的99%置信区间
+
+use states,clear
+
+*检验变量是否服从正态分布、正态性检验、
+sktest energy
+*偏态-峰态检验。原假设是随机变量服从正态分布
+
+ladder energy
+*ladder是是将幂阶梯与sktest结合起来了。相当于是对energy的一次方、二次方、三次方、取对数等变换后的数据分别进行一次正态性检验
+*当使用ladder后没有任何一种形式是服从正态分布的说明原数据中很可能存在极端值，需要去除极端值之后再用ladder
+
+gladder energy
+*将上面转化后的数据的直方图及其正态曲线画出来
+
+qladder energy
+qladder energy,scale(1.25) ylabel(none) xlabel(none)
+*画出上面所有转化形式的分位-正态图。其中的scale表示将标签和标记放大25%，ylabel(none) xlabel(none)表示没有x、y轴的标签
+
+*Box-Cox转化
+bcskew0 benergy=energy,level(95)
+*选出最佳的变换，使得变换后的数据具有近似于0的偏态值。将转换后的数据把存在benergy中，并给出最佳变换的λ与95%的置信区间
+
+use VTtown
+ge srlived=lived^0.5
+
+ladder lived
+
+*一维列联表(一元列联表)
+tabulate meetings
+
+*二维列联表(二元列联表)
+tabulate meetings kids
+
+tabulate meetings kids,column chi2
+*二维列联表并给出列的频率，并且利用卡方检验行变量与列变量之间是否相关，原假设是无关。row是行column是列
+
+tabi 52 54\11 36,column chi2
+*这样可以复现上面的结果其中52 54是第一行的数据、11 36是第二行的数据
+
+tab1 meetings gender kids
+*对着几个变量分别做一个一维列联表、tab1是一不是l
+
+tab1 gender-school
+*对gender到school之间的每一个变量做一个一维列联表包括gender和school
+
+tab2 meetings gender kids
+*做这个变量的两两之间的二维列联表，由于变量之间的先后顺序并不会影响列联表的结果，因此这里只会有3个表，而不是6个
+
+by contam,sort: tabulate meetings kids,nofreq col chi2
+*根据contam分类计算meeting与kids的二维列联表，给出列频率，并做变量之间的相关性分析。nofreq是不显示频数。
+
+by gender contam,sort:tabulate meetings kids,nofreq col chi2
+*根据gender和contam分类计算meeting和kids的二维列联表，gender是第一分类变量contam是第二分类变量。
+*这一句等价于sort gender contam与by gender contam:tabulate meetings kids,nofreq col chi2这两句，sort就是排序
+
+by gender contam,sort: tabulate meetings kids,col chi2
+
+
+table meetings,contents(freq)
+*这个不是什么的缩写，这里相当于是做meeting的一维频数列联表，contents()里面是表格中要呈现的统计量
+
+tab1 meetings gender kids
+
+table meetings  kids,contents(freq)
+*对meeting和kids做二维列联表，表中的内容是freq
+
+
+table meetings kids contam,contents(freq)
+*做meetings kids contam的三维频数列联表
+
+table meetings kids contam,contents(freq) by(gender)
+*根据gender分类计算meeting kids contam的三维频数列联表，但是这里实际上输出的只有一个表格，相当于一个四维列联表。这句代码实际实际上和下面这个是同一个意思：
+*by gender contam,sort:tabulate meetings kids,nofreq col chi2但是这句实际上会输出四个表格。利用table输出的表格看上去更整洁。tabulate不加by做多二维，table最多三维。
+
+tabulate meetings,su(lived)
+*这里实际上是相当于根据meeting分类计算了lived的基本的描述统计量，输出结果是一个二维频数列联表
+
+tabulate meetings,su(lived) means
+*只输出根据meeting分类计算的lived的均值
+
+table meetings,contents(freq)
+
+table meetings,contents(mean lived)
+*实现的与tabulate meetings,su(lived) means相同的功能，但是略有不同的地方是用table不是输出总计。输出根据meeting分类计算的lived的均值
+
+table meetings  kids,contents(mean  lived)
+*根据meetings  kids分类计算lived的均值的二维列联表
+
+table meetings kids,contents(mean lived median lived)
+*分类计算lived均值与中位数。上面的这些contents()中的变量都是数值型变量
+
+
+use sextab2,clear
+l
+
+tabulate  lifepart gender [fw=count]
+*以count为权重计算lifepart gender的二维列联表
+
+tabulate  lifepart gender [fw=count],col nof
+*以count为权重计算lifepart gender的二维列联表，频率的，不显示频数
+
+use college1,clear
+l
+su msat
+su msat [fw=enroll]
+su msat [fw=enroll]
+*以enroll为权重计算mast的概要统计量。

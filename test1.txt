@@ -1,0 +1,90 @@
+**************test1
+*1
+insheet using C:\Users\Administrator\Desktop\Stata\data\shuju12.0\MEI.raw,clear
+*导入数据MEI.raw
+
+save C:\Users\Administrator\Desktop\Stata\data\shuju12.0\exercise1.dta,replace
+*保存为exercise1.dta
+
+reshape long mei,i(year) j(month)
+*将该数据转变为长格式数据
+
+sort year month
+merge 1:1 year month using C:\Users\Administrator\Desktop\Stata\data\shuju12.0\global2.dta
+*并把它以year、month为匹配变量与数据global2.dta合并(必须先排序才能合并)
+
+graph twoway line  mei edate if year>=1950 & year<=2011||connect temp edate
+*画出 1950-2011年mei关于edate的曲线标绘图、temp关于edate的连线标绘图之叠并图
+
+drop edate _merge
+save C:\Users\Administrator\Desktop\Stata\data\shuju12.0\exercise2.dta,replace
+*删掉变量edate、_merge, 保存为 exercise2.dta
+
+table year ,contents(mean mei mean temp)
+mean(mei), over(year)
+mean(temp),over(year)
+*计算mei、temp的年均值.(这两种方式都可以但是下面这种更复杂)
+
+reshape wide mei temp,i(year) j(month)
+*将exercise2转变为宽格式数据
+
+*2
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\growth1,clear
+*调用shuju10.0中的数据growth1
+
+xpose,clear
+*将数据转置
+
+correlate v1-v5
+*计算各省人口增长之间的相关系数
+
+mat c=(1.00,0.75,0.5\0.75,1.00,0.6\0.5,0.6,1.00)
+drawnorm Y W Z, means(16,1,0) sds(9,4,36) corr(c)
+*创建模拟三个随机变量Y、W和Z的2000个观测案例，Y来自N(16,9)的总体，W来自N(1,4)的总体，Z来自N(0,36)的总体，同时限定Y、W和Z具有以下的相关关系：
+* |     Y       W         Z
+*--------------------+-----------------------------------------首先要定义相关阵，用mat这个函数定义相关阵
+*          Y |   1.0000
+ *         W |   0.75       1.0000
+  *        Z |   0.5        0.6      1.0000
+
+
+*3
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju12.0\Nations2,clear
+gen popm=pop/1000000
+*由表示人口的变量pop生成以百万人口为单位的新变量popm
+
+graph pie popm ,over( region )  pie(4,explode) pie(3,color(yellow)) plabel(_all  percent,format(%4.2f))
+*画饼图表示popm（世界人口）的地区（region)分布，要求第4块扇区突出，第三块颜色黄色，所有扇区添加标签。
+
+*4
+
+use C:\Users\Administrator\Desktop\Stata\data\shuju10.0\states,clear
+histogram  energy ,start(100) width(100)  xlabel(0(100)1000) norm
+*调用数据10.0中的数据states，画变量energy 的直方图，条柱宽度100，第一个条柱从100开始，给x轴加标签，以100为间距从0到1000，叠加相应的正态分布曲线
+
+symplot energy
+*energy的对称图
+
+quantile  energy
+*分位数图
+
+qnorm energy,grid
+*分位-正态图
+
+qqplot energy  waste
+*分位-分位图
+
+*5
+use C:\Users\Administrator\Desktop\Stata\data\shuju12.0\Arctic9,clear
+graph twoway scatter volume year[fweight= tempN ],msymbol(oh) || qfit volume year, saving(arc1)
+*调用数据Arctic9，画变量volume 关于year二次回归曲线和散点图的叠并图，散点以空心小圆圈表示，圆圈大小代表tempN(温度)大小，将图保存为arc1.gph
+
+graph twoway connect area  year,saving(arc2)
+*画area关于 year的连线标绘图，保存为arc2.gph
+
+graph twoway line tempN year,saving(arc3)
+*画tempN关于 year的曲线标绘图保存为arc3.gph
+
+graph combine arc1.gph arc2.gph arc3.gph, rows(3)
+*将上述三个图合并，其中三个图排列成三行。
